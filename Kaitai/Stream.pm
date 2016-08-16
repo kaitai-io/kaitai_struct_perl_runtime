@@ -1,4 +1,7 @@
 package Kaitai::Stream;
+
+use strict;
+use warnings;
 use Fcntl qw(SEEK_SET);
 use Encode qw(decode);
 
@@ -229,6 +232,7 @@ sub read_str_byte_limit {
     my $self = shift;
     my $size = shift;
     my $encoding = shift;
+    my $buf;
 
     read($self->{_io}, $buf, $size);
     return decode($encoding, $buf);    

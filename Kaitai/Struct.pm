@@ -1,4 +1,7 @@
 package Kaitai::Struct;
+
+use strict;
+use warnings;
 use Kaitai::Stream;
 
 sub new {
