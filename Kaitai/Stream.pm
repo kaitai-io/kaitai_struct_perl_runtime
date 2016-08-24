@@ -10,7 +10,20 @@ sub new {
     my $class = ref($invocant) || $invocant;
 
     my $_io = shift;
-    my $self = {_io => $_io};
+    my $self = {};
+
+    if (ref $_io eq 'GLOB') {
+        # _io is a file handle
+        $self->{_io} = $_io;
+    } elsif (ref $_io eq '') {
+        # _io is a memory buffer
+        my $fd;
+        open $fd, '<', \$_io or return undef;
+        binmode $fd;
+        $self ->{_io} = $fd;
+    } else {
+        return undef;
+    }
 
     bless $self;
     return $self;
