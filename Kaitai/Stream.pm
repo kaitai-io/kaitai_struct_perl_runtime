@@ -10,7 +10,20 @@ sub new {
     my $class = ref($invocant) || $invocant;
 
     my $_io = shift;
-    my $self = {_io => $_io};
+    my $self = {};
+
+    if (ref $_io eq 'GLOB') {
+        # _io is a file handle
+        $self->{_io} = $_io;
+    } elsif (ref $_io eq '') {
+        # _io is a memory buffer
+        my $fd;
+        open $fd, '<', \$_io or return undef;
+        binmode $fd;
+        $self ->{_io} = $fd;
+    } else {
+        return undef;
+    }
 
     bless $self;
     return $self;
@@ -272,6 +285,7 @@ sub read_strz {
 # ========================================================================
 
 sub process_xor_one {
+    my $self = shift;
     my $data = shift;
     my $key = shift;
 
@@ -282,6 +296,7 @@ sub process_xor_one {
 }
 
 sub process_xor_many {
+    my $self = shift;
     my $data = shift;
     my $key = shift;
     my $ki = 0;
@@ -296,6 +311,7 @@ sub process_xor_many {
 }
 
 sub process_rotate_left {
+    my $self = shift;
     my $data = shift;
     my $amount = shift;
     my $group_size = shift;
