@@ -285,7 +285,6 @@ sub read_strz {
 # ========================================================================
 
 sub process_xor_one {
-    my $self = shift;
     my $data = shift;
     my $key = shift;
 
@@ -296,7 +295,6 @@ sub process_xor_one {
 }
 
 sub process_xor_many {
-    my $self = shift;
     my $data = shift;
     my $key = shift;
     my $ki = 0;
@@ -311,7 +309,6 @@ sub process_xor_many {
 }
 
 sub process_rotate_left {
-    my $self = shift;
     my $data = shift;
     my $amount = shift;
     my $group_size = shift;
