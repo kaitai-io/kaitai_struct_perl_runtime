@@ -5,13 +5,11 @@ use warnings;
 use Kaitai::Stream;
 
 sub new {
-    my $invocant = shift;
+    my ($invocant, $_io) = @_;
     my $class = ref($invocant) || $invocant;
-
-    my $_io = shift;
     my $self = {_io => $_io};
-    bless $self;
 
+    bless $self;
     return $self;
 }
 

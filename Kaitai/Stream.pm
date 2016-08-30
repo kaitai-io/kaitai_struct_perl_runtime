@@ -6,10 +6,8 @@ use Fcntl qw(SEEK_SET);
 use Encode qw(decode);
 
 sub new {
-    my $invocant = shift;
+    my ($invocant, $_io) = @_;
     my $class = ref($invocant) || $invocant;
-
-    my $_io = shift;
     my $self = {};
 
     if (ref $_io eq 'GLOB') {
@@ -30,7 +28,7 @@ sub new {
 }
 
 sub close {
-    my $self = shift;
+    my ($self) = @_;
 
     close($self->{_io});
 }
@@ -40,26 +38,25 @@ sub close {
 # ========================================================================
 
 sub is_eof {
-    my $self = shift;
+    my ($self) = @_;
 
     return eof($self->{_io});
 }
 
 sub seek {
-    my $self = shift;
-    my $pos = shift;
+    my ($self, $pos) = @_;
 
     seek($self->{_io}, $pos, SEEK_SET);
 }
 
 sub pos {
-    my $self = shift;
+    my ($self) = @_;
 
     return tell($self->{_io});
 }
 
 sub size {
-    my $self = shift;
+    my ($self) = @_;
 
     return -s $self->{_io};
 }
@@ -69,9 +66,7 @@ sub size {
 # ========================================================================
 
 sub _read {
-    my $self = shift;
-    my $len = shift;
-    my $template = shift;
+    my ($self, $len, $template) = @_;
     my $buf;
 
     read($self->{_io}, $buf, $len);
@@ -87,7 +82,7 @@ sub _read {
 # ------------------------------------------------------------------------
 
 sub read_s1 {
-    return &_read(shift, 1, 'c');
+    return &_read(@_, 1, 'c');
 }
 
 # ........................................................................
@@ -95,15 +90,15 @@ sub read_s1 {
 # ........................................................................
 
 sub read_s2be {
-    return &_read(shift, 2, 's>');
+    return &_read(@_, 2, 's>');
 }
 
 sub read_s4be {
-    return &_read(shift, 4, 'i>');
+    return &_read(@_, 4, 'i>');
 }
 
 sub read_s8be {
-    return &_read(shift, 8, 'q>');
+    return &_read(@_, 8, 'q>');
 }
 
 # ........................................................................
@@ -111,15 +106,15 @@ sub read_s8be {
 # ........................................................................
 
 sub read_s2le {
-    return &_read(shift, 2, 's<');
+    return &_read(@_, 2, 's<');
 }
 
 sub read_s4le {
-    return &_read(shift, 4, 'i<');
+    return &_read(@_, 4, 'i<');
 }
 
 sub read_s8le {
-    return &_read(shift, 8, 'q<');
+    return &_read(@_, 8, 'q<');
 }
 
 # ------------------------------------------------------------------------
@@ -127,7 +122,7 @@ sub read_s8le {
 # ------------------------------------------------------------------------
 
 sub read_u1 {
-    return &_read(shift, 1, 'C');
+    return &_read(@_, 1, 'C');
 }
 
 # ........................................................................
@@ -135,15 +130,15 @@ sub read_u1 {
 # ........................................................................
 
 sub read_u2be {
-    return &_read(shift, 2, 'S>');
+    return &_read(@_, 2, 'S>');
 }
 
 sub read_u4be {
-    return &_read(shift, 4, 'I>');
+    return &_read(@_, 4, 'I>');
 }
 
 sub read_u8be {
-    return &_read(shift, 8, 'Q>');
+    return &_read(@_, 8, 'Q>');
 }
 
 # ........................................................................
@@ -151,15 +146,15 @@ sub read_u8be {
 # ........................................................................
 
 sub read_u2le {
-    return &_read(shift, 2, 'S<');
+    return &_read(@_, 2, 'S<');
 }
 
 sub read_u4le {
-    return &_read(shift, 4, 'I<');
+    return &_read(@_, 4, 'I<');
 }
 
 sub read_u8le {
-    return &_read(shift, 8, 'Q<');
+    return &_read(@_, 8, 'Q<');
 }
 
 # ========================================================================
@@ -171,11 +166,11 @@ sub read_u8le {
 # ........................................................................
 
 sub read_f4be {
-    return &_read(shift, 4, 'f>');
+    return &_read(@_, 4, 'f>');
 }
 
 sub read_f8be {
-    return &_read(shift, 8, 'd>');
+    return &_read(@_, 8, 'd>');
 }
 
 # ........................................................................
@@ -183,11 +178,11 @@ sub read_f8be {
 # ........................................................................
 
 sub read_f4le {
-    return &_read(shift, 4, 'f<');
+    return &_read(@_, 4, 'f<');
 }
 
 sub read_f8le {
-    return &_read(shift, 8, 'd<');
+    return &_read(@_, 8, 'd<');
 }
 
 # ========================================================================
@@ -195,8 +190,7 @@ sub read_f8le {
 # ========================================================================
 
 sub read_bytes {
-    my $self = shift;
-    my $num_to_read = shift;
+    my ($self, $num_to_read) = @_;
     my $num_read;
     my $buf;
 
@@ -208,7 +202,7 @@ sub read_bytes {
 }
 
 sub read_bytes_full {
-    my $self = shift;
+    my ($self) = @_;
     my $buf;
 
     read($self->{_io}, $buf, $self->size());
@@ -216,9 +210,7 @@ sub read_bytes_full {
 }
 
 sub ensure_fixed_contents {
-    my $self = shift;
-    my $size = shift;
-    my $expected = shift;
+    my ($self, $size, $expected) = @_;
     my $buf;
     
     read($self->{_io}, $buf, $size);
@@ -233,8 +225,7 @@ sub ensure_fixed_contents {
 # ========================================================================
 
 sub read_str_eos {
-    my $self = shift;
-    my $encoding = shift;
+    my ($self, $encoding) = @_;
     my $buf;
     
     read($self->{_io}, $buf, $self->size());
@@ -242,9 +233,7 @@ sub read_str_eos {
 }
 
 sub read_str_byte_limit {
-    my $self = shift;
-    my $size = shift;
-    my $encoding = shift;
+    my ($self, $size, $encoding) = @_;
     my $buf;
 
     read($self->{_io}, $buf, $size);
@@ -252,12 +241,7 @@ sub read_str_byte_limit {
 }
 
 sub read_strz {
-    my $self = shift;
-    my $encoding = shift;
-    my $term = shift;
-    my $include_term = shift;
-    my $consume_term = shift;
-    my $eos_error = shift;
+    my ($self, $encoding, $term, $include_term, $consume_term, $eos_error) = @_;
     my $buf = '';
 
     while (1) {
@@ -285,9 +269,7 @@ sub read_strz {
 # ========================================================================
 
 sub process_xor_one {
-    my $self = shift;
-    my $data = shift;
-    my $key = shift;
+    my ($data, $key) = @_;
 
     for (my $i = 0; $i < length($data); $i++) {
         substr($data, $i, 1) ^= $key;
@@ -296,9 +278,7 @@ sub process_xor_one {
 }
 
 sub process_xor_many {
-    my $self = shift;
-    my $data = shift;
-    my $key = shift;
+    my ($data, $key) = @_;
     my $ki = 0;
     my $kl = length($key);
 
@@ -311,10 +291,7 @@ sub process_xor_many {
 }
 
 sub process_rotate_left {
-    my $self = shift;
-    my $data = shift;
-    my $amount = shift;
-    my $group_size = shift;
+    my ($data, $amount, $group_size) = @_;
 
     die "Unable to rotate group of $group_size bytes yet" if $group_size != 1;
 
