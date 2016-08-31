@@ -227,7 +227,7 @@ sub ensure_fixed_contents {
 sub read_str_eos {
     my ($self, $encoding) = @_;
     my $buf;
-    
+
     read($self->{_io}, $buf, $self->size());
     return decode($encoding, $buf);
 }
@@ -301,7 +301,7 @@ sub process_rotate_left {
 
     for (my $i = 0; $i < length($data); $i++) {
         my $byte = unpack('C', substr($data, $i, 1));
-        substr($data, $i, 1) = pack('C', ($byte << $amount) | ($byte >> $anti_amount));
+        substr($data, $i, 1) = pack('C', (($byte << $amount) | ($byte >> $anti_amount)) & 0xFF);
     }
     return $data;
 }
