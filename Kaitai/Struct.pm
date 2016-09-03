@@ -13,4 +13,19 @@ sub new {
     return $self;
 }
 
+sub _io {
+    my ($self) = @_;
+    return $self->{_io};
+}
+
+sub _parent {
+    my ($self) = @_;
+    return $self->{_parent};
+}
+
+sub _root {
+    my ($self) = @_;
+    return $self->{_root};
+}
+
 1;
