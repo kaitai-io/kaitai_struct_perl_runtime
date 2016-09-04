@@ -2,7 +2,7 @@ package Kaitai::Stream;
 
 use strict;
 use warnings;
-use Fcntl qw(SEEK_SET);
+use Fcntl qw(SEEK_SET SEEK_END);
 use Encode qw(decode);
 
 sub new {
@@ -58,7 +58,12 @@ sub pos {
 sub size {
     my ($self) = @_;
 
-    return -s $self->{_io};
+    my $pos = tell($self->{_io});
+    CORE::seek($self->{_io}, 0, SEEK_END);
+    my $size = tell($self->{_io});
+    CORE::seek($self->{_io}, $pos, SEEK_SET);
+
+    return $size;
 }
 
 # ========================================================================
