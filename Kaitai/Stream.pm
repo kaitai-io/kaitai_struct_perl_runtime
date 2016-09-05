@@ -276,6 +276,7 @@ sub read_strz {
 sub process_xor_one {
     my ($data, $key) = @_;
 
+    $key = pack('C', $key);
     for (my $i = 0; $i < length($data); $i++) {
         substr($data, $i, 1) ^= $key;
     }
