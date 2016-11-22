@@ -74,7 +74,11 @@ sub _read {
     my ($self, $len, $template) = @_;
     my $buf;
 
-    read($self->{_io}, $buf, $len);
+    my $bytes_read = read($self->{_io}, $buf, $len);
+    if ($bytes_read != $len) {
+        die "Requested $len bytes, but got only $bytes_read bytes";
+    }    
+
     return unpack($template, $buf);
 }
 
