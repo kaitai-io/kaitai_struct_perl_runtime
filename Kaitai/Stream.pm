@@ -215,10 +215,10 @@ sub read_bytes_full {
 }
 
 sub ensure_fixed_contents {
-    my ($self, $size, $expected) = @_;
+    my ($self, $expected) = @_;
     my $buf;
     
-    read($self->{_io}, $buf, $size);
+    read($self->{_io}, $buf, length($expected));
     if ($buf ne $expected) {
         die "Unexpected fixed contents: got '$buf', was waiting for '$expected'";
     }
