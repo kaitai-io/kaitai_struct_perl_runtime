@@ -18,10 +18,14 @@ sub new {
         my $fd;
         open $fd, '<', \$_io or return undef;
         binmode $fd;
-        $self ->{_io} = $fd;
+        $self->{_io} = $fd;
     } else {
         return undef;
     }
+
+    # Used by read_bits_int()
+    $self->{bits_left} = 0;
+    $self->{bits} = 0;
 
     bless $self;
     return $self;
@@ -192,6 +196,46 @@ sub read_f4le {
 
 sub read_f8le {
     return _read(@_, 8, 'd<');
+}
+
+# ========================================================================
+# Unaligned bit values
+# ========================================================================
+
+sub read_bits_int {
+    my ($self, $n) = @_;
+
+    my $bits_needed = $n - $self->{bits_left};
+    if ($bits_needed > 0) {
+        # 1 bit  => 1 byte
+        # 8 bits => 1 byte
+        # 9 bits => 2 bytes
+        my $bytes_needed = int(($bits_needed - 1) / 8) + 1;
+        my $buf = $self->read_bytes($bytes_needed);
+        for my $byte (split("", $buf)) {
+            $byte = unpack("C", $byte);
+            $self->{bits} <<= 8;
+            $self->{bits} |= $byte;
+            $self->{bits_left} += 8;
+        }
+    }
+
+    # Raw mask with required number of 1s, starting from lowest bit
+    my $mask = (1 << $n) - 1;
+
+    # Shift mask to align with highest bits available in self.bits
+    my $shift_bits = $self->{bits_left} - $n;
+    $mask <<= $shift_bits;
+
+    # Derive reading result
+    my $buf = ($self->{bits} & $mask) >> $shift_bits;
+
+    # Clear top bits that we've just read => AND with 1s
+    $self->{bits_left} -= $n;
+    $mask = (1 << $self->{bits_left}) - 1;
+    $self->{bits} &= $mask;
+
+    return $buf;
 }
 
 # ========================================================================
