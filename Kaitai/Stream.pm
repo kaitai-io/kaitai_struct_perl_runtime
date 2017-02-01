@@ -23,11 +23,11 @@ sub new {
         return undef;
     }
 
-    # Used by read_bits_int()
-    $self->{bits_left} = 0;
-    $self->{bits} = 0;
-
     bless $self;
+
+    # Used by read_bits_int()
+    $self->align_to_byte();
+
     return $self;
 }
 
@@ -201,6 +201,13 @@ sub read_f8le {
 # ========================================================================
 # Unaligned bit values
 # ========================================================================
+
+sub align_to_byte {
+    my ($self) = @_;
+
+    $self->{bits} = 0;
+    $self->{bits_left} = 0;
+}
 
 sub read_bits_int {
     my ($self, $n) = @_;
