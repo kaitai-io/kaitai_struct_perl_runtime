@@ -3,7 +3,6 @@ package Kaitai::Stream;
 use strict;
 use warnings;
 use Fcntl qw(SEEK_SET SEEK_END);
-use Encode qw(decode);
 
 sub new {
     my ($invocant, $_io) = @_;
@@ -269,39 +268,8 @@ sub read_bytes_full {
     return $buf;
 }
 
-sub ensure_fixed_contents {
-    my ($self, $expected) = @_;
-    my $buf;
-    
-    read($self->{_io}, $buf, length($expected));
-    if ($buf ne $expected) {
-        die "Unexpected fixed contents: got '$buf', was waiting for '$expected'";
-    }
-    return $buf;
-}
-
-# ========================================================================
-# Strings
-# ========================================================================
-
-sub read_str_eos {
-    my ($self, $encoding) = @_;
-    my $buf;
-
-    read($self->{_io}, $buf, $self->size());
-    return decode($encoding, $buf);
-}
-
-sub read_str_byte_limit {
-    my ($self, $size, $encoding) = @_;
-    my $buf;
-
-    read($self->{_io}, $buf, $size);
-    return decode($encoding, $buf);    
-}
-
-sub read_strz {
-    my ($self, $encoding, $term, $include_term, $consume_term, $eos_error) = @_;
+sub read_bytes_term {
+    my ($self, $term, $include_term, $consume_term, $eos_error) = @_;
     my $buf = '';
 
     while (1) {
@@ -322,6 +290,17 @@ sub read_strz {
             $buf .= $char;
         }
     }
+}
+
+sub ensure_fixed_contents {
+    my ($self, $expected) = @_;
+    my $buf;
+
+    read($self->{_io}, $buf, length($expected));
+    if ($buf ne $expected) {
+        die "Unexpected fixed contents: got '$buf', was waiting for '$expected'";
+    }
+    return $buf;
 }
 
 # ========================================================================
