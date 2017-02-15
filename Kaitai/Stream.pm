@@ -303,6 +303,35 @@ sub ensure_fixed_contents {
     return $buf;
 }
 
+sub bytes_strip_right {
+    my ($bytes, $pad_byte) = @_;
+
+    my $pad_char = pack('C', $pad_byte);
+    my $new_len = length($bytes);
+
+    while ($new_len >= 0 && substr($bytes, $new_len - 1, 1) eq $pad_char) {
+        $new_len--;
+    }
+
+    return substr($bytes, 0, $new_len);
+}
+
+sub bytes_terminate {
+    my ($bytes, $term, $include_term) = @_;
+
+    my $term_char = pack('C', $term);
+    my $new_len = 0;
+    my $max_len = length($bytes);
+
+    while ($new_len < $max_len && substr($bytes, $new_len, 1) ne $term_char) {
+        $new_len++;
+    }
+
+    $new_len++ if ($include_term && $new_len < $max_len);
+
+    return substr($bytes, 0, $new_len);
+}
+
 # ========================================================================
 # Byte array processing
 # ========================================================================
