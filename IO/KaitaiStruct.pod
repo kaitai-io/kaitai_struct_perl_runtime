@@ -1,0 +1,79 @@
+=head1 NAME
+
+Kaitai Struct: runtime library for Perl
+
+=head1 SYNOPSIS
+
+1. Compile your .ksy file into .pm module. On Linux:
+
+    % ksc -t perl my_module.ksy
+
+On Windows:
+
+    % kaitai-struct-compiler.bat -t perl my_module.ksy
+
+2. Use the compiled .ksy in your program:
+
+    use MyModule;
+
+    # Instantiate from file
+    $kaitai = MyModule->from_file("some_binary");
+    
+    # Instantiate from memory
+    use IO::KaitaiStruct;
+    $buf = "\xAA\xBB\xCC\xDD\xEE\xFF";
+    $kaitai = MyModule->new(
+        IO::KaitaiStruct::Stream->new($buf)
+    );
+
+    # Extract data according to my_module.ksy
+    $ship = $kaitai->ship();
+    $helm = $ship->helm();
+    $cargo = $ship->deck()->cargo();
+
+=head1 DESCRIPTION
+
+This library implements Kaitai Struct API for Perl.
+
+Kaitai Struct is a declarative language used for describe various binary
+data structures, laid out in files or in memory: i.e. binary file
+formats, network stream packet formats, etc.
+
+Further reading:
+
+=over
+
+=item L<About Kaitai Struct|https://github.com/kaitai-io/kaitai_struct/>
+
+=item L<About API implemented in this library|https://github.com/kaitai-io/kaitai_struct/wiki/Kaitai-Struct-stream-API>
+
+=back
+
+=head1 AUTHORS
+
+Mikhail Yakshin <greycat@altlinux.org>
+
+Sergey Zelenyuk <s.zelenyuk@yandex.ru>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2015-2017 Kaitai Project: MIT license
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
