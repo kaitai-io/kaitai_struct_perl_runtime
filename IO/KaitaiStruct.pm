@@ -2,7 +2,7 @@
 
 package IO::KaitaiStruct;
 
-our $VERSION = "0.006_000";
+our $VERSION = "0.007_000";
 $VERSION = eval $VERSION;
 
 1;
