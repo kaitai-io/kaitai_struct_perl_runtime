@@ -309,7 +309,7 @@ sub bytes_strip_right {
     my $pad_char = pack('C', $pad_byte);
     my $new_len = length($bytes);
 
-    while ($new_len >= 0 && substr($bytes, $new_len - 1, 1) eq $pad_char) {
+    while ($new_len > 0 && substr($bytes, $new_len - 1, 1) eq $pad_char) {
         $new_len--;
     }
 
