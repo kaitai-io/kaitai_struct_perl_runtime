@@ -1,3 +1,5 @@
+#!/usr/bin/env perl
+
 use ExtUtils::MakeMaker;
 WriteMakefile(
         NAME            => 'IO::KaitaiStruct',
