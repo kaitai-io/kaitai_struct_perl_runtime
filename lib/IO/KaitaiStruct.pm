@@ -2,7 +2,7 @@
 
 package IO::KaitaiStruct;
 
-our $VERSION = "0.007_000";
+our $VERSION = "0.009_000";
 $VERSION = eval $VERSION;
 
 1;
@@ -122,7 +122,7 @@ sub _read {
     my $bytes_read = read($self->{_io}, $buf, $len);
     if ($bytes_read != $len) {
         die "Requested $len bytes, but got only $bytes_read bytes";
-    }    
+    }
 
     return unpack($template, $buf);
 }
