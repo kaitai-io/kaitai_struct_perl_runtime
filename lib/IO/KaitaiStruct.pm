@@ -85,7 +85,7 @@ sub close {
 sub is_eof {
     my ($self) = @_;
 
-    return eof($self->{_io});
+    return eof($self->{_io}) && $self->{bits_left} == 0;
 }
 
 sub seek {
