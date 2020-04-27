@@ -271,12 +271,9 @@ sub read_bits_int {
     # Raw mask with required number of 1s, starting from lowest bit
     my $mask = (1 << $n) - 1;
 
-    # Shift mask to align with highest bits available in self.bits
+    # Shift $self->{bits} to align the highest bits with the mask & derive reading result
     my $shift_bits = $self->{bits_left} - $n;
-    $mask <<= $shift_bits;
-
-    # Derive reading result
-    my $buf = ($self->{bits} & $mask) >> $shift_bits;
+    my $res = ($self->{bits} >> $shift_bits) & $mask;
 
     # Clear top bits that we've just read => AND with 1s
     $self->{bits_left} -= $n;
