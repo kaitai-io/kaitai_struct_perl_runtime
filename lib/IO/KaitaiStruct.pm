@@ -250,7 +250,7 @@ sub align_to_byte {
     $self->{bits_left} = 0;
 }
 
-sub read_bits_int {
+sub read_bits_int_be {
     my ($self, $n) = @_;
 
     my $bits_needed = $n - $self->{bits_left};
@@ -280,7 +280,43 @@ sub read_bits_int {
     $mask = (1 << $self->{bits_left}) - 1;
     $self->{bits} &= $mask;
 
-    return $buf;
+    return $res;
+}
+
+# Unused since Kaitai Struct Compiler v0.9+ - compatibility with older versions
+#
+# Deprecated, use read_bits_int_be() instead.
+
+sub read_bits_int {
+    return read_bits_int_be(@_);
+}
+
+sub read_bits_int_le {
+    my ($self, $n) = @_;
+
+    my $bits_needed = $n - $self->{bits_left};
+    if ($bits_needed > 0) {
+        # 1 bit  => 1 byte
+        # 8 bits => 1 byte
+        # 9 bits => 2 bytes
+        my $bytes_needed = int(($bits_needed - 1) / 8) + 1;
+        my $buf = $self->read_bytes($bytes_needed);
+        for my $byte (split("", $buf)) {
+            $byte = unpack("C", $byte);
+            $self->{bits} |= ($byte << $self->{bits_left});
+            $self->{bits_left} += 8;
+        }
+    }
+
+    # Raw mask with required number of 1s, starting from lowest bit
+    my $mask = (1 << $n) - 1;
+    # Derive reading result
+    my $res = $self->{bits} & $mask;
+    # Remove bottom bits that we've just read by shifting
+    $self->{bits} >>= $n;
+    $self->{bits_left} -= $n;
+
+    return $res;
 }
 
 # ========================================================================
