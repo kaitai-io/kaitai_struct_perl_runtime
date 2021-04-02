@@ -9,4 +9,4 @@ formats, network stream packet formats, etc.
 Further reading:
 
 * [About Kaitai Struct](https://github.com/kaitai-io/kaitai_struct/)
-* [About API implemented in this library](https://github.com/kaitai-io/kaitai_struct/wiki/Kaitai-Struct-stream-API)
+* [About API implemented in this library](https://doc.kaitai.io/stream_api.html)
