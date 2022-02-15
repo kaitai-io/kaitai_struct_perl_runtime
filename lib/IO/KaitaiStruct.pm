@@ -246,38 +246,37 @@ sub read_f8le {
 sub align_to_byte {
     my ($self) = @_;
 
-    $self->{bits} = 0;
     $self->{bits_left} = 0;
+    $self->{bits} = 0;
 }
 
 sub read_bits_int_be {
     my ($self, $n) = @_;
+    my $res = 0;
 
     my $bits_needed = $n - $self->{bits_left};
+    $self->{bits_left} = -$bits_needed & 7; # `-$bits_needed mod 8`
+
     if ($bits_needed > 0) {
         # 1 bit  => 1 byte
         # 8 bits => 1 byte
         # 9 bits => 2 bytes
-        my $bytes_needed = int(($bits_needed - 1) / 8) + 1;
+        my $bytes_needed = (($bits_needed - 1) >> 3) + 1; # `ceil($bits_needed / 8)` (NB: `x >> 3` is `floor(x / 8)`,
+                                                          # but ONLY for `x >= 0`, because `>>` is unsigned in Perl
+                                                          # unless it is inside a `use integer` block)
         my $buf = $self->read_bytes($bytes_needed);
-        for my $byte (split("", $buf)) {
-            $byte = unpack("C", $byte);
-            $self->{bits} <<= 8;
-            $self->{bits} |= $byte;
-            $self->{bits_left} += 8;
+        for my $byte (unpack('C*', $buf)) {
+            $res = $res << 8 | $byte;
         }
+
+        my $new_bits = $res;
+        $res = $res >> $self->{bits_left} | $self->{bits} << $bits_needed;
+        $self->{bits} = $new_bits; # will be masked at the end of the function
+    } else {
+        $res = $self->{bits} >> -$bits_needed; # shift unneeded bits out
     }
 
-    # Raw mask with required number of 1s, starting from lowest bit
-    my $mask = (1 << $n) - 1;
-
-    # Shift $self->{bits} to align the highest bits with the mask & derive reading result
-    my $shift_bits = $self->{bits_left} - $n;
-    my $res = ($self->{bits} >> $shift_bits) & $mask;
-
-    # Clear top bits that we've just read => AND with 1s
-    $self->{bits_left} -= $n;
-    $mask = (1 << $self->{bits_left}) - 1;
+    my $mask = (1 << $self->{bits_left}) - 1; # `bits_left` is in range 0..7
     $self->{bits} &= $mask;
 
     return $res;
@@ -294,28 +293,34 @@ sub read_bits_int {
 sub read_bits_int_le {
     my ($self, $n) = @_;
 
+    my $res = 0;
     my $bits_needed = $n - $self->{bits_left};
+
     if ($bits_needed > 0) {
         # 1 bit  => 1 byte
         # 8 bits => 1 byte
         # 9 bits => 2 bytes
-        my $bytes_needed = int(($bits_needed - 1) / 8) + 1;
+        my $bytes_needed = (($bits_needed - 1) >> 3) + 1; # `ceil($bits_needed / 8)` (NB: `x >> 3` is `floor(x / 8)`,
+                                                          # but ONLY for `x >= 0` - see `read_bits_int_be` method)
         my $buf = $self->read_bytes($bytes_needed);
-        for my $byte (split("", $buf)) {
-            $byte = unpack("C", $byte);
-            $self->{bits} |= ($byte << $self->{bits_left});
-            $self->{bits_left} += 8;
+        my $i = 0;
+        for my $byte (unpack('C*', $buf)) {
+            $res |= $byte << ($i * 8);
+            $i++;
         }
+
+        my $new_bits = $res >> $bits_needed;
+        $res = $res << $self->{bits_left} | $self->{bits};
+        $self->{bits} = $new_bits;
+    } else {
+        $res = $self->{bits};
+        $self->{bits} >>= $n;
     }
 
-    # Raw mask with required number of 1s, starting from lowest bit
-    my $mask = (1 << $n) - 1;
-    # Derive reading result
-    my $res = $self->{bits} & $mask;
-    # Remove bottom bits that we've just read by shifting
-    $self->{bits} >>= $n;
-    $self->{bits_left} -= $n;
+    $self->{bits_left} = -$bits_needed & 7; # `-$bits_needed mod 8`
 
+    my $mask = (1 << $n) - 1; # unlike some other languages, no problem with this in Perl
+    $res &= $mask;
     return $res;
 }
 
