@@ -121,7 +121,7 @@ sub _read {
 
     my $bytes_read = read($self->{_io}, $buf, $len);
     if ($bytes_read != $len) {
-        die "Requested $len bytes, but got only $bytes_read bytes";
+        die "Requested $len bytes, but only $bytes_read bytes available";
     }
 
     return unpack($template, $buf);
@@ -335,7 +335,7 @@ sub read_bytes {
 
     $num_read = read($self->{_io}, $buf, $num_to_read);
     if ($num_read != $num_to_read) {
-        die "Requested $num_to_read bytes, but got only $num_read bytes";
+        die "Requested $num_to_read bytes, but only $num_read bytes available";
     }
     return $buf;
 }
