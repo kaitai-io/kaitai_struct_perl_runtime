@@ -399,17 +399,12 @@ sub bytes_strip_right {
 sub bytes_terminate {
     my ($bytes, $term, $include_term) = @_;
 
-    my $term_char = pack('C', $term);
-    my $new_len = 0;
-    my $max_len = length($bytes);
-
-    while ($new_len < $max_len && substr($bytes, $new_len, 1) ne $term_char) {
-        $new_len++;
+    my $term_byte = pack('C', $term);
+    my $term_index = index($bytes, $term_byte);
+    if ($term_index == -1) {
+        return $bytes;
     }
-
-    $new_len++ if ($include_term && $new_len < $max_len);
-
-    return substr($bytes, 0, $new_len);
+    return substr($bytes, 0, $term_index + ($include_term ? 1 : 0));
 }
 
 # ========================================================================
