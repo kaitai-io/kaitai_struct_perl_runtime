@@ -350,24 +350,24 @@ sub read_bytes_full {
 
 sub read_bytes_term {
     my ($self, $term, $include_term, $consume_term, $eos_error) = @_;
-    my $buf = '';
+    my $r = '';
 
     while (1) {
-        my $char;
+        my $c;
 
-        read($self->{_io}, $char, 1);
-        if ($char eq '') {
+        read($self->{_io}, $c, 1);
+        if ($c eq '') {
             if ($eos_error) {
                 die "End of stream reached, but no terminator '$term' found";
             } else {
-                return $buf;
+                return $r;
             }
-        } elsif (ord($char) == $term) {
-            $buf .= $char if $include_term;
+        } elsif (ord($c) == $term) {
+            $r .= $c if $include_term;
             $self->seek($self->pos() - 1) unless $consume_term;
-            return $buf;
+            return $r;
         } else {
-            $buf .= $char;
+            $r .= $c;
         }
     }
 }
