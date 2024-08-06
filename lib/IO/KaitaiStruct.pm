@@ -354,21 +354,43 @@ sub read_bytes_term {
 
     while (1) {
         my $c;
-
         read($self->{_io}, $c, 1);
         if ($c eq '') {
             if ($eos_error) {
                 die "End of stream reached, but no terminator '$term' found";
-            } else {
-                return $r;
             }
-        } elsif (ord($c) == $term) {
+            return $r;
+        }
+        if (ord($c) == $term) {
             $r .= $c if $include_term;
             $self->seek($self->pos() - 1) unless $consume_term;
             return $r;
-        } else {
-            $r .= $c;
         }
+        $r .= $c;
+    }
+}
+
+sub read_bytes_term_multi {
+    my ($self, $term, $include_term, $consume_term, $eos_error) = @_;
+    my $unit_size = length($term);
+    my $r = '';
+
+    while (1) {
+        my $c;
+        my $num_read = read($self->{_io}, $c, $unit_size);
+        if ($num_read < $unit_size) {
+            if ($eos_error) {
+                die "End of stream reached, but no terminator '$term' found";
+            }
+            $r .= $c;
+            return $r;
+        }
+        if ($c eq $term) {
+            $r .= $c if $include_term;
+            $self->seek($self->pos() - $unit_size) unless $consume_term;
+            return $r;
+        }
+        $r .= $c;
     }
 }
 
@@ -405,6 +427,23 @@ sub bytes_terminate {
         return $bytes;
     }
     return substr($bytes, 0, $term_index + ($include_term ? 1 : 0));
+}
+
+sub bytes_terminate_multi {
+    my ($bytes, $term, $include_term) = @_;
+
+    my $unit_size = length($term);
+    my $search_index = index($bytes, $term);
+    while (1) {
+        if ($search_index == -1) {
+            return $bytes;
+        }
+        my $mod = $search_index % $unit_size;
+        if ($mod == 0) {
+            return substr($bytes, 0, $search_index + ($include_term ? $unit_size : 0));
+        }
+        $search_index = index($bytes, $term, $search_index + ($unit_size - $mod));
+    }
 }
 
 # ========================================================================
