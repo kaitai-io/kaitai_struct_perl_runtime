@@ -43,7 +43,7 @@ Further reading:
 
 =over
 
-=item L<About Kaitai Struct|http://kaitai.io/>
+=item L<About Kaitai Struct|https://kaitai.io/>
 
 =item L<About API implemented in this library|https://doc.kaitai.io/stream_api.html>
 
