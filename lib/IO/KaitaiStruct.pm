@@ -91,6 +91,7 @@ sub is_eof {
 sub seek {
     my ($self, $pos) = @_;
 
+    $self->align_to_byte();
     seek($self->{_io}, $pos, SEEK_SET);
 }
 
@@ -119,6 +120,7 @@ sub _read {
     my ($self, $len, $template) = @_;
     my $buf;
 
+    $self->align_to_byte();
     my $bytes_read = read($self->{_io}, $buf, $len);
     if ($bytes_read != $len) {
         die "Requested $len bytes, but only $bytes_read bytes available";
@@ -264,7 +266,7 @@ sub read_bits_int_be {
         my $bytes_needed = (($bits_needed - 1) >> 3) + 1; # `ceil($bits_needed / 8)` (NB: `x >> 3` is `floor(x / 8)`,
                                                           # but ONLY for `x >= 0`, because `>>` is unsigned in Perl
                                                           # unless it is inside a `use integer` block)
-        my $buf = $self->read_bytes($bytes_needed);
+        my $buf = $self->_read_bytes_not_aligned($bytes_needed);
         for my $byte (unpack('C*', $buf)) {
             $res = $res << 8 | $byte;
         }
@@ -302,7 +304,7 @@ sub read_bits_int_le {
         # 9 bits => 2 bytes
         my $bytes_needed = (($bits_needed - 1) >> 3) + 1; # `ceil($bits_needed / 8)` (NB: `x >> 3` is `floor(x / 8)`,
                                                           # but ONLY for `x >= 0` - see `read_bits_int_be` method)
-        my $buf = $self->read_bytes($bytes_needed);
+        my $buf = $self->_read_bytes_not_aligned($bytes_needed);
         my $i = 0;
         for my $byte (unpack('C*', $buf)) {
             $res |= $byte << ($i * 8);
@@ -330,6 +332,13 @@ sub read_bits_int_le {
 
 sub read_bytes {
     my ($self, $num_to_read) = @_;
+
+    $self->align_to_byte();
+    return $self->_read_bytes_not_aligned($num_to_read);
+}
+
+sub _read_bytes_not_aligned {
+    my ($self, $num_to_read) = @_;
     my $num_read;
     my $buf;
 
@@ -342,16 +351,18 @@ sub read_bytes {
 
 sub read_bytes_full {
     my ($self) = @_;
-    my $buf;
 
+    $self->align_to_byte();
+    my $buf;
     read($self->{_io}, $buf, $self->size());
     return $buf;
 }
 
 sub read_bytes_term {
     my ($self, $term, $include_term, $consume_term, $eos_error) = @_;
-    my $r = '';
 
+    $self->align_to_byte();
+    my $r = '';
     while (1) {
         my $c;
         read($self->{_io}, $c, 1);
@@ -372,9 +383,10 @@ sub read_bytes_term {
 
 sub read_bytes_term_multi {
     my ($self, $term, $include_term, $consume_term, $eos_error) = @_;
+
+    $self->align_to_byte();
     my $unit_size = length($term);
     my $r = '';
-
     while (1) {
         my $c;
         my $num_read = read($self->{_io}, $c, $unit_size);
